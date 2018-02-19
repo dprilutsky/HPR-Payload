@@ -2,7 +2,7 @@ To start the client, navigate to the testapp folder and run "npm start" in termi
 The client should now be visible on http://localhost:8080
 
 To start the server, navigate to the testapp folder and run "node server.js". The server
-will now run on http://localhost:8080 and the client will connect to it
+will now run on http://localhost:4001 and the client will connect to it
 
 Current State:
 Barebones system. Server receives fake "speed" values from Arduino over a serial port and
