@@ -10,6 +10,11 @@ var parser = new Readline();
 var servPort = 4001;
 
 var streamOn = false;
+const dataParams = ["Transmitting", "Recording", "Error",
+                    "Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
+                    "Velocity", "xVelocity", "yVelocity", "zVelocity",
+                    "latitude", "longditude", "altitude"];
+
 
 //Initialize server on the given port
 server.listen(servPort, function () {
@@ -17,7 +22,7 @@ server.listen(servPort, function () {
   });
 
 //Initialize COM port connection with XBee
-var port = new SerialPort('COM4', {
+var port = new SerialPort('COM6', {
     baudRate: 9600
     }, function (err) {
         if (err) {
@@ -41,9 +46,14 @@ io.on('connection', function(socket){
         //Start Listening for data from payload
         //Check to make sure they're not asking twice
         if (!streamOn) {
+            //When the Serial port parse gets a complete data segment...
             parser.on('data', function(data) {
-                socket.emit("data_update", data);
-                console.log('Data:', data);
+                console.log('Raw Data:', data);
+                //Process the data
+                var dataJSON = processData(data);
+                if (dataJSON != null){
+                    socket.emit("data_update", dataJSON);
+                }
             });
         }
         streamOn = true;
@@ -61,8 +71,28 @@ io.on('connection', function(socket){
         //Tell Payload to stop sending us data
         //port.write('S')
     });
-
 });
+
+//Function to process data where data is a string
+//Checks that data is formated, and converts it to JSON format
+function processData(data) {
+    var dataJSON = "{"
+    var dataArray = data.replace(/\r/g,"").split("#");
+    if (dataArray.length != dataParams.length) {
+        console.log('ERROR: Data Received was not properly formated');
+        console.log(dataArray)
+        return null;
+    }
+    //Convert data string into JSON format
+    for (i = 0; i < dataParams.length; i++) {
+        dataJSON += '\"' + dataParams[i] + '\"' + ':' + '\"' + dataArray[i] + '\"';
+        if (i < dataParams.length - 1) {dataJSON += ", ";}
+    }
+    dataJSON += '}';
+
+    console.log("Our JSON: ", dataJSON);
+    return dataJSON;
+}
 
 
 

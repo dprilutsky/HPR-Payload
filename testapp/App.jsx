@@ -15,10 +15,26 @@ class App extends React.Component {
     componentDidMount() {
 		// socket.on('connect', () => console.log("CONNNECTED!!!!!!1"))
 		this.state.socket.on('connect', () => this.setState({connected: true}));
-		this.state.socket.on('data_update', data => this.setState({speed: data}));
+        this.state.socket.on('data_update', data => this.processData(data));
+		// this.state.socket.on('data_update', data => this.setState({speed: data}));
 		this.state.socket.on('disconnect', () => this.setState({connected: false}));
 		// socket.on('data_update', data => console.log(data));
 	}
+
+    //Parse data in JSON and update values
+    processData(data) {
+        var dataJSON;
+        try{
+            dataJSON = JSON.parse(data);
+        } catch (e) {
+            console.log(e);
+            console.log(data);
+            return
+        }
+        this.setState({speed: dataJSON.Velocity});
+        console.log("PARSED OK. We go : ", dataJSON.Velocity);
+        console.log("PARSED OK. V is: ", parseInt(dataJSON.Velocity));
+    }
 
     render() {
         return (
