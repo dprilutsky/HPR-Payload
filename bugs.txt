@@ -1,2 +1,5 @@
--When refresh client page, connection is immediately re-established and data starts being sent. Maybe ok?
 -Need to toss values that server receives if client doesn't want them (otherwise serial buffer gets filled)
+
+
+***ToDo***
+-Set the port the radio is on through the client interface

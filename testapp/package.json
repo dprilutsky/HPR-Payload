@@ -17,6 +17,7 @@
     "express": "^4.16.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-easy-chart": "^1.0.0",
     "react-launch-gauge": "^0.2.3",
     "serialport": "^6.0.5",
     "socket.io": "^2.0.4",

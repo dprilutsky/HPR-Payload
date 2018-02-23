@@ -13,7 +13,8 @@ var streamOn = false;
 const dataParams = ["Transmitting", "Recording", "Error",
                     "Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
                     "Velocity", "xVelocity", "yVelocity", "zVelocity",
-                    "latitude", "longditude", "altitude"];
+                    "latitude", "longditude", "altitude",
+                    "flightTime"];
 
 
 //Initialize server on the given port
@@ -37,6 +38,7 @@ io.on('connection', function(socket){
     socket.on('disconnect', function (){
         streamOn = false;
         console.log("Client Disconnected")
+        parser.removeAllListeners();
         port.write('E')
     });
 
@@ -70,6 +72,18 @@ io.on('connection', function(socket){
 
         //Tell Payload to stop sending us data
         //port.write('S')
+    });
+
+    //Client wants payload to start recording data
+    socket.on('start_recording', function(){
+        console.log('Tell payload to start recording');
+        port.write('R')
+    });
+
+    //Client wants payload to stop recording data
+    socket.on('stop_recording', function(){
+        console.log('Tell payload to start recording');
+        port.write('E')
     });
 });
 

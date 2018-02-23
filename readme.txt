@@ -5,9 +5,8 @@ To start the server, navigate to the testapp folder and run "node server.js". Th
 will now run on http://localhost:4001 and the client will connect to it
 
 Current State:
-Barebones system. Server receives fake "speed" values from Arduino over a serial port and
-sends this data to the client through WebSockets using the Socket.io library. The client
-can ask to start and stop this transmission stream.
+Barebones system. Server receives fake data values from Arduino over a serial port and
+sends this data to the client through WebSockets using the Socket.io library.
 
 To test the system, connect an Arduino to you computer and run the code in arduinoTestinf folder.
 
