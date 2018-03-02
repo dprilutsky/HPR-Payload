@@ -3,3 +3,5 @@
 
 ***ToDo***
 -Set the port the radio is on through the client interface
+-Keep track of buffer size on serial
+-Add error check in payload if init fails

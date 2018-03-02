@@ -53,7 +53,7 @@ class App extends React.Component {
 
         //Update values of altitude graph
         if(this.state.Recording == 1) {
-            this.setState({altitudeHist: this.state.altitudeHist.concat(
+            this.setState({AltitudeHist: this.state.AltitudeHist.concat(
                 [{x: dataJSON.flightTime, y: dataJSON.altitude}]
                 )});
         }
