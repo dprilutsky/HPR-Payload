@@ -5,3 +5,22 @@
 -Set the port the radio is on through the client interface
 -Keep track of buffer size on serial
 -Add error check in payload if init fails
+-Set up folder for flights if it doesn't exist already
+-Error check if file can't open
+-Add difference between data processing and data sending rates
+-Shorten length of data (cut significant figures)
+-What should happen when pi is not connected? (on both ends: pi and comp)
+-What happens if code on PI crashes? should be automatically re-booted
+
+When i end recording
+	-file is closed
+	-flight number is reset to "No Flight Selected"
+	-Start recording should be dissabled until flight is selected
+
+When I start recording
+	-start writing data to file
+	-set recording to true
+	-reset the time
+
+-Update flight list
+-Remove delete flight records
