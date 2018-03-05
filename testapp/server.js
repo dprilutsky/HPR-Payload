@@ -20,6 +20,7 @@ const DELETE_RECORD = '6';
 const DATA_TRANSMISSION = 'D'
 const SETFLIGHT_FAILED  = '@'
 const UPDATED_FLIGHT_LIST  = '!'
+const TRANSMISSION_TERMINATED = '$'
 
 var servPort = 4001;
 
@@ -49,6 +50,18 @@ port.pipe(parser);
 //Wait for connection with client
 io.on('connection', function(socket){ 
     console.log("We've made a connection");
+    //Start Listening for data from payload
+    //Check to make sure they're not asking twice
+    if (!streamOn) {
+        //When the Serial port parse gets a complete data segment...
+        parser.on('data', function(data) {
+            console.log('Raw Data:', data);
+            //Process the data
+            var dataJSON = processData(socket, data);
+        });
+    }
+    streamOn = true;
+    
     socket.on('disconnect', function (){
         streamOn = false;
         console.log("Client Disconnected")
@@ -60,18 +73,6 @@ io.on('connection', function(socket){
     //Handle stream request (payload should start transmitting)
     socket.on('start_stream', function(){
         console.log('Asked to init stream');
-        //Start Listening for data from payload
-        //Check to make sure they're not asking twice
-        if (!streamOn) {
-            //When the Serial port parse gets a complete data segment...
-            parser.on('data', function(data) {
-                console.log('Raw Data:', data);
-                //Process the data
-                var dataJSON = processData(socket, data);
-            });
-        }
-        streamOn = true;
-
         //Tell Payload to send us data
         port.write(START_TRANSMISSION);
     });
@@ -79,9 +80,6 @@ io.on('connection', function(socket){
     //Handle stream stop request (payload should stop transmitting)
     socket.on('stop_stream', function(){
         console.log('Asked to stop stream');
-        streamOn = false;
-        parser.removeAllListeners();
-
         //Tell Payload to stop sending us data
         port.write(STOP_TRANSMISSION);
     });
@@ -144,6 +142,10 @@ function processData(socket, data) {
     else if (code == UPDATED_FLIGHT_LIST) {
         console.log("Flights on record: ", data);
         socket.emit("flight_list_update", data);
+    }
+    else if (code == TRANSMISSION_TERMINATED) {
+        console.log("TRANSMISSION TERMINATED");
+        socket.emit("transmission_terminated");
     }
 }
 

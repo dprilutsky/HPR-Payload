@@ -22,6 +22,7 @@ DELETE_RECORD = '6'
 DATA_TRANSMISSION = 'D'
 SETFLIGHT_FAILED  = '@'
 UPDATED_FLIGHT_LIST  = '!'
+TRANSMISSION_TERMINATED = '$'
 
 dataFolderPath = "./flightRecords"
 flightFile = None
@@ -79,6 +80,7 @@ def updateCommands():
 			dataDict["Transmitting"] = 1
 		elif c == STOP_TRANSMISSION:
 			dataDict["Transmitting"] = 0
+			ser.write(TRANSMISSION_TERMINATED + '\n')
 		elif c == START_RECORDING:
 			if flightFile is None:
 				continue

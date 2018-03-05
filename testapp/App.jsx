@@ -46,6 +46,7 @@ class App extends React.Component {
 		this.state.socket.on('connect', () => this.setState({connected: true}));
         this.state.socket.on('data_update', data => this.processData(data));
 		this.state.socket.on('disconnect', () => this.setState({connected: false}));
+        this.state.socket.on('transmission_terminated', () => this.setState({Transmitting: false}));
         this.state.socket.on('setflight_failed', message => alert(message));
         this.state.socket.on('flight_list_update', data => this.setState({FlightList: data != '' ? data.split(',') : []}));
         // data.forEach(function(item, index) {
@@ -91,7 +92,7 @@ class App extends React.Component {
                     <button disabled = {!this.state.connected} onClick = {() => {this.state.socket.emit('stop_stream'); this.setState({Transmitting: 0});}}> End Transmission </button>
                     <button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('start_recording')}> Start Recording </button>
                     <button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('stop_recording')}> End Recording </button>
-                    <button disabled = {!(this.state.connected && this.state.Transmitting)} onClick = {() => this.state.socket.emit('update_flight_list')}> Update Flight List </button>
+                    <button disabled = {!(this.state.connected)} onClick = {() => this.state.socket.emit('update_flight_list')}> Update Flight List </button>
                 </div>
                 <br />
 
