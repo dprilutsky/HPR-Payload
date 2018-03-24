@@ -104,13 +104,13 @@ class SensorData:
 			tiltCompensatedHeading += 360
 
 		dataDict['pitch'] = self.CFangleX;
-		dataDict['roll'] = self.CFangleY
-		dataDict['yaw'] = tiltCompensatedHeading
-		dataDict['Velocity'] = self.Velocity
-		dataDict['xVelocity'] = self.xVelocity
-		dataDict['yVelocity'] = self.yVelocity
-		dataDict['zVelocity'] = self.zVelocity
-		dataDict['Acceleration'] = self.Acceleration
-		dataDict['xAcceleration'] = ACCx
-		dataDict['yAcceleration'] = ACCy
-		dataDict['zAcceleration'] = ACCz
+		dataDict['roll'] = self.CFangleY;
+		dataDict['yaw'] = heading;
+		dataDict['Velocity'] = self.Velocity;
+		dataDict['xVelocity'] = self.xVelocity;
+		dataDict['yVelocity'] = self.yVelocity;
+		dataDict['zVelocity'] = self.zVelocity;
+		dataDict['Acceleration'] = self.Acceleration;
+		dataDict['xAcceleration'] = ACCx;
+		dataDict['yAcceleration'] = ACCy;
+		dataDict['zAcceleration'] = ACCz;

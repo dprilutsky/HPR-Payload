@@ -4,6 +4,12 @@ import io from 'socket.io-client';
 import {AreaChart} from 'react-easy-chart';
 import FlightForm from './FlightForm.jsx';
 import FlightTable from './FlightTable.jsx';
+import RocketView from './RocketView2.jsx';
+import RocketMap from './rocketMapLeaf.jsx';
+
+import style from './main.css'
+
+const mapFocus = [40.901551, -74.861830];
 
 class App extends React.Component {
     constructor(props, context) {
@@ -30,8 +36,8 @@ class App extends React.Component {
             yVelocity:      0,
             zVelocity:      0,
             
-            Latitude:       0,
-            Longditude:     0,
+            Latitude:       -74.861830,
+            Longditude:     40.901551,
             Altitude:       0,
 
             AltitudeHist:   [{ x: 0, y: 0 }],
@@ -49,9 +55,6 @@ class App extends React.Component {
         this.state.socket.on('transmission_terminated', () => this.setState({Transmitting: false}));
         this.state.socket.on('setflight_failed', message => alert(message));
         this.state.socket.on('flight_list_update', data => this.setState({FlightList: data != '' ? data.split(',') : []}));
-        // data.forEach(function(item, index) {
-        //     dictionary[index] = data[index]
-        // })
 	}
 
     //Parse data in JSON and update values
@@ -73,7 +76,7 @@ class App extends React.Component {
                 [{x: dataJSON.FlightTime, y: dataJSON.Altitude}]
                 )});
         }
-        // console.log(this.state.AltitudeHist);
+        console.log(this.state.Pitch, this.state.Roll, this.state.Yaw);
     }
 
     deleteRecord(name) {
@@ -82,9 +85,18 @@ class App extends React.Component {
 
     render() {
         const flight = "Flight Number: " + (this.state.FlightNum ? this.state.FlightNum : 'No Flight Selected')
+        
+        var centerStyle = {
+            height: "400px",
+            width: "400px",
+            padding: '10px'
+        }
+
         return (
             <div>
                 {flight}
+                <RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
+                <RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
                 <FlightForm socket={this.state.socket}/>
                 <FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
                 <div>
@@ -97,7 +109,7 @@ class App extends React.Component {
                 <br />
 
                 <div>
-                    <b> Velocity </b>
+                    <div className = {style.gaugeTitle}> Velocity </div>
                     <CircleGauge title = {'Velocity'} value={this.state.Velocity} high = {75} unit = {'km/h'}
                         decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
                 </div>
@@ -126,3 +138,12 @@ export default App;
 
 // socket.on('connect', () => socket.emit('sendData'))
 
+ // <div>
+
+                // {flight}
+                // <SimpleExample/>
+                // </div>
+
+
+
+               

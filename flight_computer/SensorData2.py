@@ -66,14 +66,14 @@ while True:
     # x, y, z = imu.getFusionData()
     # print("%f %f %f" % (x,y,z))
     data = imu.getIMUData()
-    # print(data)
+    print(data)
     print("\n\n")
-    (data["pressureValid"], data["pressure"], data["temperatureValid"], data["temperature"]) = pressure.pressureRead()
-    fusionPose = data["fusionPose"]
-    print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), 
-        math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))
-    if (data["pressureValid"]):
-        print("Pressure: %f, height above sea level: %f" % (data["pressure"], computeHeight(data["pressure"])))
-    if (data["temperatureValid"]):
-        print("Temperature: %f" % (data["temperature"]))
+    # (data["pressureValid"], data["pressure"], data["temperatureValid"], data["temperature"]) = pressure.pressureRead()
+    # fusionPose = data["fusionPose"]
+    # print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), 
+    #     math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))
+    # if (data["pressureValid"]):
+    #     print("Pressure: %f, height above sea level: %f" % (data["pressure"], computeHeight(data["pressure"])))
+    # if (data["temperatureValid"]):
+    #     print("Temperature: %f" % (data["temperature"]))
     time.sleep(poll_interval*1.0/1000.0)
