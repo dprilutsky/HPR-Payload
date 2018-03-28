@@ -2,3 +2,48 @@
     text-align: center;
     color: red;
 }
+
+.buttons {
+	display: inline-block;
+}
+
+.flightForm {
+	display: inline-block;
+}
+
+.gaugeDiv {
+  margin: 0px;
+  padding: 3px;
+  display: block;
+}
+
+.graphDiv {
+  resize: both;
+  overflow: hidden;
+  height: 200px;
+  width: 300px;
+  margin: 0px;
+  padding: 3px;
+}
+
+.gaugeCell {
+	vertical-align: top;
+}
+
+.chartDiv2 {
+}
+
+.tableDiv{
+}
+
+.dataTable {
+}
+
+.dataCell {
+}
+
+.dataTableRow {
+}
+
+.mainTable {
+}

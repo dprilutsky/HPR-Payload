@@ -14,6 +14,7 @@ export default class FlightForm extends React.Component {
   handleNum(event) {
     this.setState({flightNum: event.target.value});
   }
+  
   handleBlurb(event) {
     this.setState({flightBlurb: event.target.value});
   }
