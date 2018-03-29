@@ -9,7 +9,7 @@ import FlightTable from './FlightTable.jsx';
 import RocketView from './RocketView2.jsx';
 import RocketMap from './rocketMapLeaf.jsx';
 import DataGraph from './DataGraph.jsx';
-
+import ResizeAware from 'react-resize-aware';
 import style from './main.css'
 
 const mapFocus = [40.901551, -74.861830];
@@ -102,6 +102,12 @@ class App extends React.Component {
 			this.setState({AltitudeHist: this.state.AltitudeHist.concat(
 				[{x: dataJSON.FlightTime, y: dataJSON.Altitude}]
 				)});
+			this.setState({VelocityHist: this.state.AltitudeHist.concat(
+				[{x: dataJSON.FlightTime, y: dataJSON.Velocity}]
+				)});
+			this.setState({Acceleration: this.state.AltitudeHist.concat(
+				[{x: dataJSON.FlightTime, y: dataJSON.Acceleration}]
+				)});
 		}
 		console.log(this.state.Pitch, this.state.Roll, this.state.Yaw);
 	}
@@ -129,95 +135,154 @@ class App extends React.Component {
 		}
 
 		return (
-			<div>
-				<div className = {style.header}> {flight} </div>
-				<div className = {style.actions}>
-					<div className = {style.buttons}>
-						<button disabled = {!this.state.connected} onClick = {() => this.state.socket.emit('start_stream')}> Start Transmission </button>
-						<button disabled = {!this.state.connected} onClick = {() => {this.state.socket.emit('stop_stream'); this.setState({Transmitting: 0});}}> End Transmission </button>
-						<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('start_recording')}> Start Recording </button>
-						<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('stop_recording')}> End Recording </button>
-						<button disabled = {!(this.state.connected)} onClick = {() => this.state.socket.emit('update_flight_list')}> Update Flight List </button>
-					</div>
-					<div className = {style.flightForm}>
-						<FlightForm socket={this.state.socket}/>
+			<div style = {{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
+				<div>
+					<div className = {style.header}> {flight} </div>
+					<div className = {style.actions}>
+						<div className = {style.buttons}>
+							<button disabled = {!this.state.connected} onClick = {() => this.state.socket.emit('start_stream')}> Start Transmission </button>
+							<button disabled = {!this.state.connected} onClick = {() => {this.state.socket.emit('stop_stream'); this.setState({Transmitting: 0});}}> End Transmission </button>
+							<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('start_recording')}> Start Recording </button>
+							<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('stop_recording')}> End Recording </button>
+							<button disabled = {!(this.state.connected)} onClick = {() => this.state.socket.emit('update_flight_list')}> Update Flight List </button>
+						</div>
+						<div className = {style.flightForm}>
+							<FlightForm socket={this.state.socket}/>
+						</div>
 					</div>
 				</div>
 
-				<table className = {style.mainTable}>
-					<tbody>
-					<tr>
-						<td> 
-							<table className = {style.dataTable} ><tbody>
-								<tr className = {style.dataTableRow}>
-									<td className = {style.gaugeCell}> <div id = {"gaugeContainer"} className = {style.gaugeDiv}>
-										<div className = {style.gaugeTitle}> Altitude </div>
-										<CircleGauge title = {'Velocity'} value={this.state.Velocity} high = {75} unit = {'km/h'}
-											decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
-									</div></td>
-									<td> 
-										<b> Altitude History</b>
-										<div className = {style.graphDiv}>
-											<DataGraph unitX = {"s"} unitY = {"m"} data = {this.state.AltitudeHist}/>
-										</div>
-									</td>
-								</tr>
-								<tr className = {style.dataTableRow}>
-									<td className = {style.gaugeCell}>
-										<b> Velocity </b>
-										<div className = {style.gaugeDiv}> 
-											<CircleGauge title = {'Acceleration'} value={this.state.Acceleration} high = {75} unit = {'m/s^2'}
-												decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
-										</div>
-									</td>
-									<td>
-										<b> Velocity History</b>
-										<div className = {style.graphDiv}> 
-											<DataGraph unitX = {"s"} unitY = {"m/s"} data = {this.state.AltitudeHist}/>
-										</div>
-									</td>
-								</tr>
-								<tr>
-									<td className = {style.dataTableRow}>
-										<b> Acceleration </b>
-										<CircleGauge title = {'Altitude'} value={this.state.Altitude} high = {75} unit = {'meters'}
-										decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
-									</td>
-									<td className = {style.gaugeCell}>
-										<b> Acceleration History</b>
-										<div className = {style.graphDiv}>
-											<DataGraph unitX = {"s"} unitY = {"m/s^2"} data = {this.state.AltitudeHist}/>
-										</div>
-									</td>
-								</tr>
-							</tbody></table>
-						</td>
-						<td> 
-							<table><tbody>
-								<tr>
-									<td>
-										<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
-									</td>
-									<td> 
-										<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
-									</td>
-								</tr>
-								<tr>
-									<td> cell </td>
-									<td>
-										<FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
-									</td>
-								</tr>
-							</tbody></table>
-						</td>
-					</tr>
-					</tbody>
-				</table>
+
+				<div className = {style.mainDiv}>
+					<div className = {style.dataDiv}>
+						<div className = {style.dataRow}>
+							<div className = {style.gaugeTitle}> Altitude (m)</div>
+							<div className = {style.row1Div}>
+									<CircleGauge title = {'Altitude'} value={this.state.Altitude} high = {75} unit = {'m'}
+										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+								<div className = {style.chartDiv}>
+									<DataGraph unitX = {"s"} unitY = {"m"} data = {this.state.AltitudeHist}/>
+								</div>
+							</div>
+						</div>
+
+						<div className = {style.dataRow}>
+							<div className = {style.gaugeTitle}> Velocity (m/s)</div>
+							<div className = {style.row1Div}>
+									<CircleGauge title = {'Velocity'} value={this.state.Velocity} high = {75} unit = {'km/h'}
+										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+								<div className = {style.chartDiv}>
+									<DataGraph unitX = {"s"} unitY = {"m/s"} data = {this.state.VelocityHist}/>
+								</div>
+							</div>
+						</div>
+
+						<div className = {style.dataRow}>
+							<div className = {style.gaugeTitle}> Acceleration (m/s<sup>2</sup>) </div>
+							<div className = {style.row1Div}>
+									<CircleGauge title = {'Acceleration'} value={this.state.Acceleration} high = {75} unit = {'m/s2'}
+										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+								<div className = {style.chartDiv}>
+									<DataGraph unitX = {"s"} unitY = {"m/s2"} data = {this.state.AccelerationHist}/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div className = {style.imageDiv}>
+						<div className = {style.rowImgDiv}>
+							<div className = {style.rocketViewDiv}>
+								<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
+							</div>
+							<div className = {style.mapViewDiv}>
+								<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
+							</div>
+						</div>
+						<div className = {style.rowOtherDiv}> asdfdasf/ndsafadsf\n\nasdfadsf
+							<FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}
 }
 export default App;
+
+
+
+
+
+
+
+				// <table className = {style.mainTable}>
+				// 	<tbody>
+				// 	<tr>
+				// 		<td> 
+				// 			<table className = {style.dataTable} ><tbody>
+				// 				<tr className = {style.dataTableRow}>
+				// 					<td className = {style.gaugeCell}> <div id = {"gaugeContainer"} className = {style.gaugeDiv}>
+
+				// 					</div></td>
+				// 					<td> 
+				// 						<b> Altitude History</b>
+				// 						<div className = {style.graphDiv}>
+				// 							<DataGraph unitX = {"s"} unitY = {"m"} data = {this.state.AltitudeHist}/>
+				// 						</div>
+				// 					</td>
+				// 				</tr>
+				// 				<tr className = {style.dataTableRow}>
+				// 					<td className = {style.gaugeCell}>
+				// 						<b> Velocity </b>
+				// 						<div className = {style.gaugeDiv}> 
+				// 							<CircleGauge title = {'Acceleration'} value={this.state.Acceleration} high = {75} unit = {'m/s^2'}
+				// 								decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
+				// 						</div>
+				// 					</td>
+				// 					<td>
+				// 						<b> Velocity History</b>
+				// 						<div className = {style.graphDiv}> 
+				// 							<DataGraph unitX = {"s"} unitY = {"m/s"} data = {this.state.AltitudeHist}/>
+				// 						</div>
+				// 					</td>
+				// 				</tr>
+				// 				<tr>
+				// 					<td className = {style.dataTableRow}>
+				// 						<b> Acceleration </b>
+				// 						<CircleGauge title = {'Altitude'} value={this.state.Altitude} high = {75} unit = {'meters'}
+				// 						decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
+				// 					</td>
+				// 					<td className = {style.gaugeCell}>
+				// 						<b> Acceleration History</b>
+				// 						<div className = {style.graphDiv}>
+				// 							<DataGraph unitX = {"s"} unitY = {"m/s^2"} data = {this.state.AltitudeHist}/>
+				// 						</div>
+				// 					</td>
+				// 				</tr>
+				// 			</tbody></table>
+				// 		</td>
+				// 		<td> 
+				// 			<table><tbody>
+				// 				<tr>
+				// 					<td>
+				// 						<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
+				// 					</td>
+				// 					<td> 
+				// 						<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
+				// 					</td>
+				// 				</tr>
+				// 				<tr>
+				// 					<td> cell </td>
+				// 					<td>
+				// 						<FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
+				// 					</td>
+				// 				</tr>
+				// 			</tbody></table>
+				// 		</td>
+				// 	</tr>
+				// 	</tbody>
+				// </table>
+
+
 // <button title = {'Start Transmission'} onClick = {() => socket.emit('init_stream')} </button>
 
 // socket.on('connect', () => socket.emit('sendData'))

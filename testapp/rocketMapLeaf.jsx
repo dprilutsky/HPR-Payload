@@ -5,9 +5,8 @@ const stamenTonerTiles = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png';
 const zoomLevel = 12;
 
 var centerStyle = {
-    height: "400px",
-    width: "400px",
-    padding: '10px'
+    height: "100%",
+    width: "100%",
 }
 
 export default class rocketMap extends Component {
@@ -16,12 +15,10 @@ export default class rocketMap extends Component {
     }
     render() {
         return (
-            <div>
-                <Map style = {centerStyle} center={this.props.center} zoom={zoomLevel}>
-                    <TileLayer url={stamenTonerTiles} />
-                    <Marker position={this.props.rocketLoc} />
-                </Map>
-            </div>
+            <Map style = {centerStyle} center={this.props.center} zoom={zoomLevel}>
+                <TileLayer url={stamenTonerTiles} />
+                <Marker position={this.props.rocketLoc} />
+            </Map>
         );
     }
 }

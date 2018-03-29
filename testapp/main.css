@@ -1,3 +1,113 @@
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+
+
+.mainDiv {
+	display: flex;
+	flex: 1;
+	flex-direction: row;
+}
+
+	.dataDiv {
+		display: flex;
+		flex-direction: column;
+
+		resize: horizontal;
+		overflow: hidden;
+		width: 60%;
+		/*background-color: blue;*/
+		padding: 12px;
+		justify-content: space-between;
+	}
+
+		.dataRow{
+			display: flex;
+			resize: vertical;
+			overflow: hidden;
+			padding: 5px;
+			flex-direction: column;
+			flex-basis: 1;
+			/*background-color: magenta;*/
+		}
+			.gaugeTitle {
+				background-color: lightblue;
+			}
+
+			.row1Div {
+				display: flex;
+				/*background-color: green;*/
+				flex: 1;
+			}
+
+				.dialDiv{
+					width: 200px;
+				}
+
+				.chartDiv {
+					flex-grow: 1;
+					overflow: hidden;
+				}
+
+	.imageDiv {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		/*background-color: red;*/
+		/*overflow: hidden;*/
+	}
+
+		.rowImgDiv {
+			resize: vertical;
+			overflow: hidden;
+			display: flex;
+			/*background-color: magenta;*/
+			justify-content: center;
+			height: 50%;
+			padding: 5px;
+		}
+
+			.rocketViewDiv{
+				resize: horizontal;
+				overflow: hidden;
+				display: flex;
+				/*background-color: green;*/
+				width: 50%;
+				align-items: center;
+				justify-content: center;
+				padding: 3px;
+			}
+
+			.mapViewDiv{
+				display: flex;
+				flex: 1;
+				/*background-color: grey;*/
+				align-items: center;
+				justify-content: center;
+				padding: 3px;
+			}
+
+		.rowOtherDiv {
+			flex: 1;
+			/*background-color: purple;*/
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .gaugeTitle {
     text-align: center;
     color: red;

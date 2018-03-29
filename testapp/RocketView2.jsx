@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import * as THREE from 'three'
 // var THREE = require('three-js')(["OBJLoader","AxesHelper"]);
 var OBJLoader = require('three-obj-loader')(THREE);
+import ReactResizeDetector from 'react-resize-detector';
  
 // console.log(typeof THREE.OBJLoader);
 
@@ -15,6 +16,8 @@ export default class Simple extends React.Component {
     this.start = this.start.bind(this)
     this.stop = this.stop.bind(this)
     this.animate = this.animate.bind(this)
+
+    this.onResize = this.onResize.bind(this);
   }
 
   componentDidMount() {
@@ -120,12 +123,20 @@ export default class Simple extends React.Component {
     this.renderer.render(this.scene, this.camera)
   }
 
+  onResize() {
+    console.log("RESIZING");
+    this.renderer.setSize(this.mount.clientWidth, this.mount.clientHeight);
+    this.camera.aspect = this.mount.clientWidth / this.mount.clientHeight;
+    this.camera.updateProjectionMatrix();
+  }
+
   render() {
     return (
-      <div
-        style={{ width: '400px', height: '400px' }}
-        ref={(mount) => { this.mount = mount }}
-      />
+        <div
+          style={{ display: "flex", justifyContent: "center", alignItems: "center", width: '100%', height: '100%' }}
+          ref={(mount) => { this.mount = mount }}>
+          <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+        </div>
     )
   }
 }
