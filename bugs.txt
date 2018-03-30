@@ -11,6 +11,7 @@
 -Shorten length of data (cut significant figures)
 -What should happen when pi is not connected? (on both ends: pi and comp)
 -What happens if code on PI crashes? should be automatically re-booted
+-Should not be allowed to delete the file that we are flying
 
 When i end recording
 	-file is closed

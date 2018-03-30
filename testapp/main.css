@@ -1,15 +1,62 @@
-.clearfix::after {
-    content: "";
-    clear: both;
-    display: table;
+:root {
+	--color1: grey;
+	--color2: #2e94c7;
 }
 
+button {
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 12px;
+  background: var(--color1);
+  /*padding: 10px 20px 10px 20px;*/
+  border: solid var(--color2) 4px;
+  text-decoration: none;
+  margin: 2px;
+  width: 150px;
+  height: 30px;
+}
 
+button[disabled] {
+	background-color: grey;
+	border: grey;
+}
+
+button:hover:enabled {
+  background: #2e94c7;
+  text-decoration: none;
+}
+
+.gaugeTitle {
+    text-align: center;
+    color: white;
+	background: rgb(38,50,56);
+	background: linear-gradient(90deg, rgba(38,50,56,1) 18%, rgba(54,81,102,1) 61%, rgba(70,92,108,1) 100%);
+}
+
+.buttons {
+	display: inline-block;
+}
+
+.flightForm {
+	display: inline-block;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: var(--color2);
+	color: white;
+	padding-left: 5px;
+	padding-right: 5px;
+	height: 30px;
+}
 
 .mainDiv {
 	display: flex;
 	flex: 1;
 	flex-direction: row;
+	padding-top: 5px;
 }
 
 	.dataDiv {
@@ -20,7 +67,7 @@
 		overflow: hidden;
 		width: 60%;
 		/*background-color: blue;*/
-		padding: 12px;
+		padding-bottom: 5px;
 		justify-content: space-between;
 	}
 
@@ -28,7 +75,7 @@
 			display: flex;
 			resize: vertical;
 			overflow: hidden;
-			padding: 5px;
+			padding-bottom: 5px;
 			flex-direction: column;
 			flex-basis: 1;
 			/*background-color: magenta;*/
@@ -39,6 +86,7 @@
 
 			.row1Div {
 				display: flex;
+				overflow: hidden;
 				/*background-color: green;*/
 				flex: 1;
 			}
@@ -50,6 +98,7 @@
 				.chartDiv {
 					flex-grow: 1;
 					overflow: hidden;
+					color: red;
 				}
 
 	.imageDiv {
@@ -94,66 +143,3 @@
 			flex: 1;
 			/*background-color: purple;*/
 		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.gaugeTitle {
-    text-align: center;
-    color: red;
-}
-
-.buttons {
-	display: inline-block;
-}
-
-.flightForm {
-	display: inline-block;
-}
-
-.gaugeDiv {
-  margin: 0px;
-  padding: 3px;
-  display: block;
-}
-
-.graphDiv {
-  resize: both;
-  overflow: hidden;
-  height: 200px;
-  width: 300px;
-  margin: 0px;
-  padding: 3px;
-}
-
-.gaugeCell {
-	vertical-align: top;
-}
-
-.chartDiv2 {
-}
-
-.tableDiv{
-}
-
-.dataTable {
-}
-
-.dataCell {
-}
-
-.dataTableRow {
-}
-
-.mainTable {
-}

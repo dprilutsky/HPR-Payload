@@ -3,12 +3,13 @@ import ReactResizeDetector from 'react-resize-detector';
 import {CircleGauge} from 'react-launch-gauge';
 import io from 'socket.io-client';
 // import {LineChart} from 'react-launch-line';
-import {ResponsiveContainer, LineChart, ReferenceLine, Label, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip} from 'recharts'
 import FlightForm from './FlightForm.jsx';
 import FlightTable from './FlightTable.jsx';
 import RocketView from './RocketView2.jsx';
 import RocketMap from './rocketMapLeaf.jsx';
 import DataGraph from './DataGraph.jsx';
+import DataGraph2 from './DataGraph2.jsx';
+
 import ResizeAware from 'react-resize-aware';
 import style from './main.css'
 
@@ -24,6 +25,7 @@ class App extends React.Component {
 			Error:          "",
 			FlightNum:      0,
 			FlightTime:     0,
+			FlightBlurb: 	"David's flight",
 
 			Pitch:          0, 
 			Roll:           0,
@@ -43,25 +45,29 @@ class App extends React.Component {
 			Longditude:     40.901551,
 			Altitude:       0,
 
-			AltitudeHist:   [{ x: 0, y: 1 },
-				{ x: 1.3, y: -4 },
-				{ x: 2.2, y: 9 },
-				{ x: 3.7, y: 16 },
-				{ x: 4.4, y: 25 },
-				{ x: 5.2, y: 26 },
-				{ x: 6.7, y: 25 },
-				{ x: 7, y: -4 },
-				{ x: 8, y: 9 },
-				{ x: 9, y: 16 },
-				{ x: 10, y: 25 },
-				{ x: 11, y: 26 },
-				{ x: 12, y: 25 },
-				{ x: 13, y: -4 },
-				{ x: 14, y: 9 },
-				{ x: 15, y: 26 },
-				{ x: 16, y: 35 },
-				{ x: 17, y: 46 },
-				{ x: 18, y: 55 }],
+			AltitudeHist:   [
+			// { x: 0, y: 1 }
+				// { x: 1.3, y: -4 },
+				// { x: 2.2, y: 9 },
+				// { x: 3.7, y: 16 },
+				// { x: 4.4, y: 25 },
+				// { x: 5.2, y: 26 },
+				// { x: 6.7, y: 25 },
+				// { x: 7, y: -4 },
+				// { x: 8, y: 9 },
+				// { x: 9, y: 16 },
+				// { x: 10, y: 25 },
+				// { x: 11, y: 26 },
+				// { x: 12, y: 25 },
+				// { x: 13, y: -4 },
+				// { x: 14, y: 9 },
+				// { x: 15, y: 26 },
+				// { x: 16, y: 35 },
+				// { x: 17, y: 46 },
+				// { x: 18, y: 55 }
+				],
+			VelocityHist: 		[],
+			AccelerationHist: 	[],
 			FlightList:     [],
 
 			socket: io.connect('http://localhost:4001'),
@@ -71,6 +77,8 @@ class App extends React.Component {
 			// gaugeWidth: 200,
 		};
 		this.deleteRecord = this.deleteRecord.bind(this);
+		this.startRecording = this.startRecording.bind(this);
+		this.decorate = false;
 	}
 	componentDidMount() {
 		this.state.socket.on('connect', () => this.setState({connected: true}));
@@ -100,13 +108,14 @@ class App extends React.Component {
 		//Update values of altitude graph
 		if(this.state.Recording == 1) {
 			this.setState({AltitudeHist: this.state.AltitudeHist.concat(
-				[{x: dataJSON.FlightTime, y: dataJSON.Altitude}]
+				[{x: parseFloat(dataJSON.FlightTime), y: parseFloat(dataJSON.Altitude)}]
 				)});
+			// console.log(this.state.AltitudeHist);
 			this.setState({VelocityHist: this.state.AltitudeHist.concat(
-				[{x: dataJSON.FlightTime, y: dataJSON.Velocity}]
+				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Velocity)/100}]
 				)});
-			this.setState({Acceleration: this.state.AltitudeHist.concat(
-				[{x: dataJSON.FlightTime, y: dataJSON.Acceleration}]
+			this.setState({AccelerationHist: this.state.AltitudeHist.concat(
+				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Acceleration)/100}]
 				)});
 		}
 		console.log(this.state.Pitch, this.state.Roll, this.state.Yaw);
@@ -114,6 +123,15 @@ class App extends React.Component {
 
 	deleteRecord(name) {
 		this.state.socket.emit('delete_record', name);
+	}
+
+	startRecording() {
+		this.setState({
+			AltitudeHist: 		[{ x: 0, y: 1 }],
+			VelocityHist: 		[{ x: 0, y: 1 }],
+			AccelerationHist: 	[{ x: 0, y: 1 }]
+		});
+		this.state.socket.emit('start_recording');
 	}
 
 	render() {
@@ -137,12 +155,17 @@ class App extends React.Component {
 		return (
 			<div style = {{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
 				<div>
-					<div className = {style.header}> {flight} </div>
+					<div className = {style.header}>
+							<div style = {{display: "inlineBlock"}}> {flight} </div>
+							<div> T+   {this.state.FlightTime} </div>
+							<div> {this.state.FlightBlurb} </div>
+						</div>
+
 					<div className = {style.actions}>
 						<div className = {style.buttons}>
 							<button disabled = {!this.state.connected} onClick = {() => this.state.socket.emit('start_stream')}> Start Transmission </button>
 							<button disabled = {!this.state.connected} onClick = {() => {this.state.socket.emit('stop_stream'); this.setState({Transmitting: 0});}}> End Transmission </button>
-							<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('start_recording')}> Start Recording </button>
+							<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.startRecording()}> Start Recording </button>
 							<button disabled = {!(this.state.connected && this.state.Transmitting == 1 && !isNaN(this.state.FlightNum))} onClick = {() => this.state.socket.emit('stop_recording')}> End Recording </button>
 							<button disabled = {!(this.state.connected)} onClick = {() => this.state.socket.emit('update_flight_list')}> Update Flight List </button>
 						</div>
@@ -159,9 +182,9 @@ class App extends React.Component {
 							<div className = {style.gaugeTitle}> Altitude (m)</div>
 							<div className = {style.row1Div}>
 									<CircleGauge title = {'Altitude'} value={this.state.Altitude} high = {75} unit = {'m'}
-										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+										decorate = {this.decorate} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
 								<div className = {style.chartDiv}>
-									<DataGraph unitX = {"s"} unitY = {"m"} data = {this.state.AltitudeHist}/>
+									<DataGraph2 data = {this.state.AltitudeHist}/>
 								</div>
 							</div>
 						</div>
@@ -170,9 +193,9 @@ class App extends React.Component {
 							<div className = {style.gaugeTitle}> Velocity (m/s)</div>
 							<div className = {style.row1Div}>
 									<CircleGauge title = {'Velocity'} value={this.state.Velocity} high = {75} unit = {'km/h'}
-										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+										decorate = {this.decorate} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
 								<div className = {style.chartDiv}>
-									<DataGraph unitX = {"s"} unitY = {"m/s"} data = {this.state.VelocityHist}/>
+									<DataGraph2 data = {this.state.VelocityHist}/>
 								</div>
 							</div>
 						</div>
@@ -181,9 +204,9 @@ class App extends React.Component {
 							<div className = {style.gaugeTitle}> Acceleration (m/s<sup>2</sup>) </div>
 							<div className = {style.row1Div}>
 									<CircleGauge title = {'Acceleration'} value={this.state.Acceleration} high = {75} unit = {'m/s2'}
-										decorate = {true} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
+										decorate = {this.decorate} fontSize = {5} mainBkg = {'#263238'}> </CircleGauge>
 								<div className = {style.chartDiv}>
-									<DataGraph unitX = {"s"} unitY = {"m/s2"} data = {this.state.AccelerationHist}/>
+									<DataGraph2 data = {this.state.AccelerationHist}/>
 								</div>
 							</div>
 						</div>
@@ -197,7 +220,7 @@ class App extends React.Component {
 								<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
 							</div>
 						</div>
-						<div className = {style.rowOtherDiv}> asdfdasf/ndsafadsf\n\nasdfadsf
+						<div className = {style.rowOtherDiv}>
 							<FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
 						</div>
 					</div>
@@ -207,97 +230,3 @@ class App extends React.Component {
 	}
 }
 export default App;
-
-
-
-
-
-
-
-				// <table className = {style.mainTable}>
-				// 	<tbody>
-				// 	<tr>
-				// 		<td> 
-				// 			<table className = {style.dataTable} ><tbody>
-				// 				<tr className = {style.dataTableRow}>
-				// 					<td className = {style.gaugeCell}> <div id = {"gaugeContainer"} className = {style.gaugeDiv}>
-
-				// 					</div></td>
-				// 					<td> 
-				// 						<b> Altitude History</b>
-				// 						<div className = {style.graphDiv}>
-				// 							<DataGraph unitX = {"s"} unitY = {"m"} data = {this.state.AltitudeHist}/>
-				// 						</div>
-				// 					</td>
-				// 				</tr>
-				// 				<tr className = {style.dataTableRow}>
-				// 					<td className = {style.gaugeCell}>
-				// 						<b> Velocity </b>
-				// 						<div className = {style.gaugeDiv}> 
-				// 							<CircleGauge title = {'Acceleration'} value={this.state.Acceleration} high = {75} unit = {'m/s^2'}
-				// 								decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
-				// 						</div>
-				// 					</td>
-				// 					<td>
-				// 						<b> Velocity History</b>
-				// 						<div className = {style.graphDiv}> 
-				// 							<DataGraph unitX = {"s"} unitY = {"m/s"} data = {this.state.AltitudeHist}/>
-				// 						</div>
-				// 					</td>
-				// 				</tr>
-				// 				<tr>
-				// 					<td className = {style.dataTableRow}>
-				// 						<b> Acceleration </b>
-				// 						<CircleGauge title = {'Altitude'} value={this.state.Altitude} high = {75} unit = {'meters'}
-				// 						decorate = {true} fontSize = {5} mainBkg = {'#263238'} />
-				// 					</td>
-				// 					<td className = {style.gaugeCell}>
-				// 						<b> Acceleration History</b>
-				// 						<div className = {style.graphDiv}>
-				// 							<DataGraph unitX = {"s"} unitY = {"m/s^2"} data = {this.state.AltitudeHist}/>
-				// 						</div>
-				// 					</td>
-				// 				</tr>
-				// 			</tbody></table>
-				// 		</td>
-				// 		<td> 
-				// 			<table><tbody>
-				// 				<tr>
-				// 					<td>
-				// 						<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
-				// 					</td>
-				// 					<td> 
-				// 						<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
-				// 					</td>
-				// 				</tr>
-				// 				<tr>
-				// 					<td> cell </td>
-				// 					<td>
-				// 						<FlightTable data={this.state.FlightList} deleteAction={this.deleteRecord}/>
-				// 					</td>
-				// 				</tr>
-				// 			</tbody></table>
-				// 		</td>
-				// 	</tr>
-				// 	</tbody>
-				// </table>
-
-
-// <button title = {'Start Transmission'} onClick = {() => socket.emit('init_stream')} </button>
-
-// socket.on('connect', () => socket.emit('sendData'))
-
- // <div>
-
-				// {flight}
-				// <SimpleExample/>
-				// </div>
-
-
-
-			   // <ReactResizeDetector handleWidth handleHeight onResize={() => {
-						// 			    	const gaugeHeight = document.getElementById('gaugeContainer').clientHeight;
-						// 					this.setState({gaugeHeight: gaugeHeight});
-						// 					const gaugeWidth = document.getElementById('gaugeContainer').clientWidth;
-						// 					this.setState({gaugeWidth: gaugeWidth})
-						// 			  	}} />

@@ -39,7 +39,9 @@ dataDict["flightNum"] = "No Flight Selected"
 ser = serial.Serial('/dev/ttyGS0',9600, timeout = 0)
 
 flightStartTime = 0
+
 def main():
+	alt = 0;
 	# Initialize state paramters
 	sensorData = SensorData.SensorData()
 	# Initialize sensors
@@ -47,11 +49,12 @@ def main():
 	IMU.initIMU()       #Initialise the accelerometer, gyroscope and compass
 
 	while True:
+		alt += 0.1
 		#Update the dictionary of data, calculate flight time
 		sensorData.processData(dataDict)
-		dataDict["altitude"] = 10
+		dataDict["altitude"] = alt;
 		if dataDict["Recording"] == 1:
-			dataDict["flightTime"] = time.time() - flightStartTime;
+			dataDict["flightTime"] = str(round(time.time() - flightStartTime, 2));
 
 		#Convert data to string
 		dataString = craftMessage()
@@ -67,7 +70,7 @@ def main():
 
 		#Look for input commands
 		updateCommands();
-		time.sleep(0.01)
+		time.sleep(0.5)
 
 def updateCommands():
 	global flightStartTime

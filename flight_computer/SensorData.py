@@ -110,7 +110,7 @@ class SensorData:
 		dataDict['xVelocity'] = self.xVelocity;
 		dataDict['yVelocity'] = self.yVelocity;
 		dataDict['zVelocity'] = self.zVelocity;
-		dataDict['Acceleration'] = self.Acceleration;
+		dataDict['Acceleration'] = str(round(self.Acceleration, 2));
 		dataDict['xAcceleration'] = ACCx;
 		dataDict['yAcceleration'] = ACCy;
 		dataDict['zAcceleration'] = ACCz;
