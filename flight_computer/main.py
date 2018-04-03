@@ -8,6 +8,7 @@ import os
 import SensorData
 import serial
 import re
+import GPSData
 
 #Codes we can receive
 START_TRANSMISSION = '1'
@@ -31,7 +32,7 @@ dataKeys = ["Transmitting", "Recording", "Error", "flightNum", "flightTime",
 			"pitch", "roll", "yaw",
 			"Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
 			"Velocity", "xVelocity", "yVelocity", "zVelocity",
-			"latitude", "longditude", "altitude"];
+			"latitude", "longitude", "altitude"];
 dataDict = dict.fromkeys(dataKeys, 0);
 dataDict["flightNum"] = "No Flight Selected"
 
@@ -42,17 +43,20 @@ flightStartTime = 0
 
 def main():
 	alt = 0;
-	# Initialize state paramters
+	# Initialize state parameters
 	sensorData = SensorData.SensorData()
 	# Initialize sensors
 	IMU.detectIMU()     #Detect if BerryIMUv1 or BerryIMUv2 is connected.
 	IMU.initIMU()       #Initialise the accelerometer, gyroscope and compass
+	# Initialize GPS
+	gpsData = GPSData.GPSData("/dev/serial0", 9600)
 
 	while True:
 		alt += 0.1
 		#Update the dictionary of data, calculate flight time
 		sensorData.processData(dataDict)
-		dataDict["altitude"] = alt;
+		# gpsData.processData(dataDict)
+		dataDict["altitude"] = alt
 		if dataDict["Recording"] == 1:
 			dataDict["flightTime"] = str(round(time.time() - flightStartTime, 2));
 
@@ -70,7 +74,7 @@ def main():
 
 		#Look for input commands
 		updateCommands();
-		time.sleep(0.5)
+		time.sleep(0.1)
 
 def updateCommands():
 	global flightStartTime
@@ -111,7 +115,10 @@ def deleteRecord():
 	flightName = ser.read(1)
 	while '&' not in flightName:
 		flightName = flightName + ser.read(1)
-	os.remove(os.path.join(dataFolderPath, flightName[:-1]))
+	try:
+		os.remove(os.path.join(dataFolderPath, flightName[:-1]))
+	except OSError as error:
+		print(error)
 
 def transmitFlightList():
 	allRecords = [f for f in os.listdir(dataFolderPath) if os.path.isfile(os.path.join(dataFolderPath, f))]

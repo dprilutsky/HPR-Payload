@@ -29,7 +29,7 @@ const dataKeys = ["Transmitting", "Recording", "Error", "FlightNum", "FlightTime
                     "Pitch", "Roll", "Yaw",
                     "Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
                     "Velocity", "xVelocity", "yVelocity", "zVelocity",
-                    "Latitude", "Longditude", "Altitude"];
+                    "Latitude", "Longitude", "Altitude"];
 
 
 //Initialize server on the given port
@@ -75,6 +75,7 @@ io.on('connection', function(socket){
         console.log('Asked to init stream');
         //Tell Payload to send us data
         port.write(START_TRANSMISSION);
+        port.write(UPDATE_FLIGHT_LIST);
     });
 
     //Handle stream stop request (payload should stop transmitting)

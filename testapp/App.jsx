@@ -41,8 +41,8 @@ class App extends React.Component {
 			yVelocity:      0,
 			zVelocity:      0,
 			
-			Latitude:       -74.861830,
-			Longditude:     40.901551,
+			Latitude:       40.901551,
+			Longitude:     -74.861830,
 			Altitude:       0,
 
 			AltitudeHist:   [
@@ -118,7 +118,7 @@ class App extends React.Component {
 				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Acceleration)/100}]
 				)});
 		}
-		console.log(this.state.Pitch, this.state.Roll, this.state.Yaw);
+		console.log(this.state.Longitude, this.state.Latitude);
 	}
 
 	deleteRecord(name) {
@@ -217,7 +217,7 @@ class App extends React.Component {
 								<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
 							</div>
 							<div className = {style.mapViewDiv}>
-								<RocketMap center = {mapFocus} rocketLoc = {[this.state.Longditude, this.state.Latitude]}/>
+								<RocketMap center = {mapFocus} rocketLoc = {[parseFloat(this.state.Latitude), parseFloat(this.state.Longitude)]}/>
 							</div>
 						</div>
 						<div className = {style.rowOtherDiv}>

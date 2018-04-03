@@ -15,7 +15,7 @@ export default class rocketMap extends Component {
     }
     render() {
         return (
-            <Map style = {centerStyle} center={this.props.center} zoom={zoomLevel}>
+            <Map style = {centerStyle} center={this.props.rocketLoc} zoom={zoomLevel}>
                 <TileLayer url={stamenTonerTiles} />
                 <Marker position={this.props.rocketLoc} />
             </Map>
