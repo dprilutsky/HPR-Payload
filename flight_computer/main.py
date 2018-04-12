@@ -9,6 +9,7 @@ import SensorData
 import serial
 import re
 import GPSData
+import PressureData
 
 #Codes we can receive
 START_TRANSMISSION = '1'
@@ -25,11 +26,13 @@ SETFLIGHT_FAILED  = '@'
 UPDATED_FLIGHT_LIST  = '!'
 TRANSMISSION_TERMINATED = '$'
 
+#Constants
+sealevel_pa = 101325.0
 dataFolderPath = "./flightRecords"
 flightFile = None
 
 dataKeys = ["Transmitting", "Recording", "Error", "flightNum", "flightTime", 
-			"pitch", "roll", "yaw",
+			"pitch", "roll", "heading",
 			"Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
 			"Velocity", "xVelocity", "yVelocity", "zVelocity",
 			"latitude", "longitude", "altitude"];
@@ -48,15 +51,22 @@ def main():
 	# Initialize sensors
 	IMU.detectIMU()     #Detect if BerryIMUv1 or BerryIMUv2 is connected.
 	IMU.initIMU()       #Initialise the accelerometer, gyroscope and compass
+	IMU.writeACC(IMU.LSM9DS0_CTRL_REG2_XM, 0b00100000)  #+/- 16G full scale
+	IMU.writeMAG(IMU.LSM9DS0_CTRL_REG5_XM, 0b11110000)  #enable internal temp sensor - set magnetometer to high res, datarate to 50Hz
+	IMU.writeMAG(IMU.LSM9DS0_CTRL_REG6_XM, 0b01100000)  #+- 12 Gauss full scale resolution
+
+
 	# Initialize GPS
 	gpsData = GPSData.GPSData("/dev/serial0", 9600)
+	# Initialize barometer
+	pressureData = PressureData.PressureData()
 
 	while True:
 		alt += 0.1
 		#Update the dictionary of data, calculate flight time
 		sensorData.processData(dataDict)
-		# gpsData.processData(dataDict)
-		dataDict["altitude"] = alt
+		gpsData.processData(dataDict, logAlt = False)
+		pressureData.processData(dataDict, sealevel_pa, logAlt = True)
 		if dataDict["Recording"] == 1:
 			dataDict["flightTime"] = str(round(time.time() - flightStartTime, 2));
 
@@ -74,7 +84,7 @@ def main():
 
 		#Look for input commands
 		updateCommands();
-		time.sleep(0.1)
+		time.sleep(0.01)
 
 def updateCommands():
 	global flightStartTime
@@ -161,14 +171,14 @@ def craftMessage():
 	return output[:-1]
 
 def atoi(text):
-    return int(text) if text.isdigit() else text
+	return int(text) if text.isdigit() else text
 
 def natural_keys(text):
-    '''
-    alist.sort(key=natural_keys) sorts in human order
-    http://nedbatchelder.com/blog/200712/human_sorting.html
-    '''
-    return [atoi(c) for c in re.split('(\d+)', text) ]
+	'''
+	alist.sort(key=natural_keys) sorts in human order
+	http://nedbatchelder.com/blog/200712/human_sorting.html
+	'''
+	return [atoi(c) for c in re.split('(\d+)', text) ]
 
 
 

@@ -6,6 +6,8 @@
 #BMP280_I2CADDR  = 0x77
 #BMP280_I2CADDR2 = 0x76
 
+
+
 #SETTINGS FOR TEMPERATURE OVERSAMPLING
 #OVER x2 SAMPLE NO USE FOR PRESSURE ACCURANCY
 #modet=
@@ -41,21 +43,30 @@
 #read_altitude(self, sealevel_pa=101325.0)
 #read_sealevel_pressure(self, altitude_m=0.0)
 
+
+
 import time
 import BMP280.BMP280 as BMP280
 
-#101325.0
+#setting timeout for 7 hours
+timeout = time.time() + 60*60*7
 
-class PressureData:
+#Initializing the sensor
+sensor = BMP280.BMP280(modep=BMP280.BMP280_ULTRAHIGHRES,modet=BMP280.BMP280_T_O2,filter=BMP280.BMP280_FILTER_OFF,address=BMP280.BMP280_I2CADDR)
+
+#Setting a start time for better log plots
+st = time.time()
+#writing to csv file every 30 seconds
+while True:
+	#Getting sensor-temp and -pressure
+	t1,p1 = sensor.read_temperature_pressure()
+	#Getting corrected pressure for current pressure at sealevel
+	alt = sensor.read_altitude(sealevel_pa=101325.0) 	#Takes new messurement so the sensor_data might have changed
 	
-	#Initializing the sensor
-	sensor = BMP280.BMP280(modep=BMP280.BMP280_ULTRAHIGHRES,modet=BMP280.BMP280_T_O2,filter=BMP280.BMP280_FILTER_OFF,address=BMP280.BMP280_I2CADDR)
+        out=("temperature: " + str(t1) + ',   pressure: ' + str(p1) + ',   altitude: ' + str(alt) + '\n')
+        print(out)
+        time.sleep(1)
+        if time.time() > timeout:
+                file.close()
+                break
 
-	def processData(self, dataDict, sealevel_pa, logAlt) :
-			#Getting sensor-temp and -pressure
-		t1,p1 = self.sensor.read_temperature_pressure()
-		#Getting corrected pressure for current pressure at sealevel
-		alt = self.sensor.read_altitude(sealevel_pa = sealevel_pa) 	#Takes new messurement so the sensor_data might have changed
-
-		if logAlt:
-			dataDict["altitude"] = alt

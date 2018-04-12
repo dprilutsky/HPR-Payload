@@ -26,7 +26,7 @@ var servPort = 4001;
 
 var streamOn = false;
 const dataKeys = ["Transmitting", "Recording", "Error", "FlightNum", "FlightTime", 
-                    "Pitch", "Roll", "Yaw",
+                    "Pitch", "Roll", "Heading",
                     "Acceleration", "xAcceleration", "yAcceleration", "zAcceleration", 
                     "Velocity", "xVelocity", "yVelocity", "zVelocity",
                     "Latitude", "Longitude", "Altitude"];

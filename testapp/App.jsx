@@ -7,7 +7,6 @@ import FlightForm from './FlightForm.jsx';
 import FlightTable from './FlightTable.jsx';
 import RocketView from './RocketView2.jsx';
 import RocketMap from './rocketMapLeaf.jsx';
-import DataGraph from './DataGraph.jsx';
 import DataGraph2 from './DataGraph2.jsx';
 
 import ResizeAware from 'react-resize-aware';
@@ -27,9 +26,9 @@ class App extends React.Component {
 			FlightTime:     0,
 			FlightBlurb: 	"David's flight",
 
-			Pitch:          0, 
+			Pitch:          45, 
 			Roll:           0,
-			Yaw:            0,
+			Heading:        45,
 
 			Acceleration:   0,
 			xAcceleration:  0,
@@ -111,11 +110,11 @@ class App extends React.Component {
 				[{x: parseFloat(dataJSON.FlightTime), y: parseFloat(dataJSON.Altitude)}]
 				)});
 			// console.log(this.state.AltitudeHist);
-			this.setState({VelocityHist: this.state.AltitudeHist.concat(
-				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Velocity)/100}]
+			this.setState({VelocityHist: this.state.VelocityHist.concat(
+				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Velocity)}]
 				)});
-			this.setState({AccelerationHist: this.state.AltitudeHist.concat(
-				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Acceleration)/100}]
+			this.setState({AccelerationHist: this.state.AccelerationHist.concat(
+				[{x:  parseFloat(dataJSON.FlightTime), y:  parseFloat(dataJSON.Acceleration)}]
 				)});
 		}
 		console.log(this.state.Longitude, this.state.Latitude);
@@ -214,7 +213,7 @@ class App extends React.Component {
 					<div className = {style.imageDiv}>
 						<div className = {style.rowImgDiv}>
 							<div className = {style.rocketViewDiv}>
-								<RocketView x={this.state.Pitch * Math.PI / 180} y={this.state.Roll * Math.PI / 180} z={this.state.Yaw * Math.PI / 180}/>
+								<RocketView y={this.state.Pitch * Math.PI / 180} x={this.state.Roll * Math.PI / 180} z={this.state.Heading * Math.PI / 180}/>
 							</div>
 							<div className = {style.mapViewDiv}>
 								<RocketMap center = {mapFocus} rocketLoc = {[parseFloat(this.state.Latitude), parseFloat(this.state.Longitude)]}/>

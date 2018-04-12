@@ -1,79 +1,125 @@
-import sys, getopt
-
-sys.path.append('.')
-import RTIMU
-import os.path
-import time
+import IMU
+import datetime
 import math
 
-SETTINGS_FILE = "RTIMULib"
+RAD_TO_DEG = 57.29578
+M_PI = 3.14159265358979323846
+G_GAIN = 0.070  # [deg/s/LSB]  If you change the dps for gyro, you need to update this value accordingly
+AA =  0.40      # Complementary filter constant
+ACC_SCALE = 0.732
+G = 9.807
 
-#  computeHeight() - the conversion uses the formula:
-#
-#  h = (T0 / L0) * ((p / P0)**(-(R* * L0) / (g0 * M)) - 1)
-#
-#  where:
-#  h  = height above sea level
-#  T0 = standard temperature at sea level = 288.15
-#  L0 = standard temperatur elapse rate = -0.0065
-#  p  = measured pressure
-#  P0 = static pressure = 1013.25
-#  g0 = gravitational acceleration = 9.80665
-#  M  = mloecular mass of earth's air = 0.0289644
-#  R* = universal gas constant = 8.31432
-#
-#  Given the constants, this works out to:
-#
-#  h = 44330.8 * (1 - (p / P0)**0.190263)
+class SensorData:
+    gyroXangle = 0.0
+    gyroYangle = 0.0
+    gyroZangle = 0.0
+    CFangleX = 0.0
+    CFangleY = 0.0
+    xVelocity = 0.0
+    yVelocity = 0.0
+    zVelocity = 0.0
+    a = datetime.datetime.now()
 
-def computeHeight(pressure):
-    return 44330.8 * (1 - pow(pressure / 1013.25, 0.190263));
-    
-print("Using settings file " + SETTINGS_FILE + ".ini")
-if not os.path.exists(SETTINGS_FILE + ".ini"):
-  print("Settings file does not exist, will be created")
+    def refreshData() :
+        gyroXangle = 0.0
+        gyroYangle = 0.0
+        gyroZangle = 0.0
+        CFangleX = 0.0
+        CFangleY = 0.0
+        xVelocity = 0.0
+        yVelocity = 0.0
+        zVelocity = 0.0
 
-s = RTIMU.Settings(SETTINGS_FILE)
-imu = RTIMU.RTIMU(s)
-pressure = RTIMU.RTPressure(s)
+    def processData(self, dataDict) :
+        #Read the accelerometer,gyroscope and magnetometer values
+        ACCx = IMU.readACCx() * ACC_SCALE / 1000 * G
+        ACCy = IMU.readACCy() * ACC_SCALE / 1000 * G
+        ACCz = IMU.readACCz() * ACC_SCALE / 1000 * G
+        GYRx = IMU.readGYRx()
+        GYRy = IMU.readGYRy()
+        GYRz = IMU.readGYRz()
+        MAGx = IMU.readMAGx()
+        MAGy = IMU.readMAGy()
+        MAGz = IMU.readMAGz()
 
-print("IMU Name: " + imu.IMUName())
-print("Pressure Name: " + pressure.pressureName())
+        ##Calculate loop Period(LP). How long between Gyro Reads
+        b = datetime.datetime.now() - self.a
+        self.a = datetime.datetime.now()
+        LP = b.microseconds/(1000000*1.0)
+        # print "Loop Time | %5.2f|" % ( LP ),
 
-if (not imu.IMUInit()):
-    print("IMU Init Failed")
-    sys.exit(1)
-else:
-    print("IMU Init Succeeded");
+        ##Calculate velocity from acceleration
+        self.xVelocity += ACCx*LP
+        self.yVelocity += ACCy*LP
+        self.zVelocity += ACCz*LP
+        self.Velocity = math.sqrt(self.xVelocity * self.xVelocity + self.yVelocity * self.yVelocity + self.zVelocity * self.zVelocity)
+        self.Acceleration = math.sqrt(ACCx * ACCx + ACCy * ACCy + ACCz * ACCz) - G
 
-# this is a good time to set any fusion parameters
+        #Convert Gyro raw to degrees per second
+        rate_gyr_x =  GYRx * G_GAIN
+        rate_gyr_y =  GYRy * G_GAIN
+        rate_gyr_z =  GYRz * G_GAIN
 
-imu.setSlerpPower(0.02)
-imu.setGyroEnable(True)
-imu.setAccelEnable(True)
-imu.setCompassEnable(True)
+        #Calculate the angles from the gyro. 
+        self.gyroXangle+=rate_gyr_x*LP
+        self.gyroYangle+=rate_gyr_y*LP
+        self.gyroZangle+=rate_gyr_z*LP
 
-if (not pressure.pressureInit()):
-    print("Pressure sensor Init Failed")
-else:
-    print("Pressure sensor Init Succeeded")
+        #Convert Accelerometer values to degrees
+        AccXangle =  (math.atan2(ACCy,ACCz)+M_PI)*RAD_TO_DEG
+        AccYangle =  (math.atan2(ACCz,ACCx)+M_PI)*RAD_TO_DEG
 
-poll_interval = imu.IMUGetPollInterval()
-print("Recommended Poll Interval: %dmS\n" % poll_interval)
+        
 
-while True:
-  if imu.IMURead():
-    # x, y, z = imu.getFusionData()
-    # print("%f %f %f" % (x,y,z))
-    data = imu.getIMUData()
-    print(data)
-    print("\n\n")
-    # (data["pressureValid"], data["pressure"], data["temperatureValid"], data["temperature"]) = pressure.pressureRead()
-    # fusionPose = data["fusionPose"]
-    # print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), 
-    #     math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))
-    # if (data["pressureValid"]):
-    #     print("Pressure: %f, height above sea level: %f" % (data["pressure"], computeHeight(data["pressure"])))
-    # if (data["temperatureValid"]):
-    #     print("Temperature: %f" % (data["temperature"]))
-    time.sleep(poll_interval*1.0/1000.0)
+        #convert the values to -180 and +180
+        AccXangle -= 180.0
+        if AccYangle > 90:
+            AccYangle -= 270.0
+        else:
+            AccYangle += 90.0
+
+        print("MAGx: ", AccXangle)
+        print("MAGy: ", AccYangle)
+        print("\n")
+
+
+        #Complementary filter used to combine the accelerometer and gyro values.
+        self.CFangleX=AA*(self.CFangleX+rate_gyr_x*LP) +(1 - AA) * AccXangle
+        self.CFangleY=AA*(self.CFangleY+rate_gyr_y*LP) +(1 - AA) * AccYangle
+
+        #Calculate heading
+        heading = 180 * math.atan2(MAGy,MAGx)/M_PI
+
+        #Only have our heading between 0 and 360
+        if heading < 0:
+            heading += 360
+
+        #Normalize accelerometer raw values.
+        accXnorm = ACCx/math.sqrt(ACCx * ACCx + ACCy * ACCy + ACCz * ACCz)
+        accYnorm = ACCy/math.sqrt(ACCx * ACCx + ACCy * ACCy + ACCz * ACCz)
+
+        #Calculate pitch and roll
+        pitch = math.asin(accXnorm)
+        roll = -math.asin(accYnorm/math.cos(pitch))
+
+        #Calculate the new tilt compensated values
+        magXcomp = MAGx*math.cos(pitch)+MAGz*math.sin(pitch)
+        magYcomp = MAGx*math.sin(roll)*math.sin(pitch)+MAGy*math.cos(roll)-MAGz*math.sin(roll)*math.cos(pitch)
+
+        #Calculate tilt compensated heading
+        tiltCompensatedHeading = 180 * math.atan2(magYcomp,magXcomp)/M_PI
+
+        if tiltCompensatedHeading < 0:
+            tiltCompensatedHeading += 360
+
+        dataDict['pitch'] = self.CFangleX;
+        dataDict['roll'] = self.CFangleY;
+        dataDict['yaw'] = heading;
+        dataDict['Velocity'] = self.Velocity;
+        dataDict['xVelocity'] = self.xVelocity;
+        dataDict['yVelocity'] = self.yVelocity;
+        dataDict['zVelocity'] = self.zVelocity;
+        dataDict['Acceleration'] = str(round(self.Acceleration, 2));
+        dataDict['xAcceleration'] = ACCx;
+        dataDict['yAcceleration'] = ACCy;
+        dataDict['zAcceleration'] = ACCz;

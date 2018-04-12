@@ -110,11 +110,25 @@ export default class Simple extends React.Component {
   }
 
   animate() {
+
+    var yRotationPitch = new THREE.Matrix4()
+    yRotationPitch.makeRotationX(this.props.y)
+    var zRotationHeading = new THREE.Matrix4()
+    zRotationHeading.makeRotationZ(this.props.z)
+
+    var orientation = new THREE.Matrix4()
+    orientation.multiplyMatrices(zRotationHeading, yRotationPitch)
+    this.rocket.setRotationFromMatrix(orientation)
+
+
     // this.rocket.rotation.x += 0.01
     // this.rocket.rotation.z += 0.01
-    this.rocket.rotation.x = this.props.x;
-    this.rocket.rotation.y = this.props.y;
-    this.rocket.rotation.z = this.props.z;
+    // var orientation = new THREE.Euler(this.props.x, this.props.y, this.props.z, 'ZYX')
+    // this.rocket.setRotationFromEuler(orientation)
+
+    // this.rocket.rotation.x = this.props.x;
+    // this.rocket.rotation.y = this.props.y;
+    // this.rocket.rotation.z = this.props.z;
     this.renderScene()
     this.frameId = window.requestAnimationFrame(this.animate)
   }

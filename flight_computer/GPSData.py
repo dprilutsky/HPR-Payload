@@ -17,27 +17,27 @@ class GPSData:
 		self.longitude = 0
 		self.latitude = 0
 
-	def processData(self, dataDict) :
+	def processData(self, dataDict, logAlt) :
 		data = self.gps.readline()
 		try:
 			for msg in self.streamreader.next(data):
-				try:
-					self.altitude = msg.altitude
-				except AttributeError as error:
-					pass
-
+				if logAlt:
+					try:
+						self.altitude = msg.altitude
+					except AttributeError as error:
+						pass
 				try:
 					self.longitude = msg.longitude
 				except AttributeError as error:
 					pass
-
 				try:
 					self.latitude = msg.latitude
 				except AttributeError as error:
 					pass					
 		except pynmea2.nmea.ParseError:
-			print("failed a parse")
+			print("failed a GPS parse")
 
-		dataDict['altitude'] = self.altitude;
-		dataDict['longitude'] = self.longitude;
-		dataDict['latitude'] = self.latitude;
+		if logAlt:
+			dataDict['altitude'] = self.altitude
+		dataDict['longitude'] = self.longitude
+		dataDict['latitude'] = self.latitude
